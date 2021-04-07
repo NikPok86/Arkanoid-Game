@@ -9,6 +9,7 @@ public class Ball : MonoBehaviour
     public bool inPlay;
     public Transform paddle;
     public float speed;
+    public Transform explosion;
 
     void Start()
     {
@@ -25,7 +26,7 @@ public class Ball : MonoBehaviour
         if (Input.GetMouseButtonDown(0) && !inPlay)
         {
             inPlay = true;
-            rb.AddForce(Vector2.up * speed);
+            rb.AddForce(Vector2.up * speed * Time.deltaTime);
         }
     }
 
@@ -36,6 +37,28 @@ public class Ball : MonoBehaviour
             Debug.Log("Ball fell");
             rb.velocity = Vector2.zero;
             inPlay = false;
+        }
+    }
+
+    float hitFactor (Vector2 ballPos, Vector2 paddlePos, float paddleWidth)
+    {
+        return (ballPos.x - paddlePos.x) / paddleWidth;
+    }
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.transform.CompareTag("brick"))
+        {
+            Transform newExplosion = Instantiate (explosion, other.transform.position, other.transform.rotation);
+            Destroy (newExplosion.gameObject, 1f);
+            Destroy (other.gameObject);
+        }   
+
+        if (other.gameObject.CompareTag("paddle"))
+        {
+            float x = hitFactor (transform.position, other.transform.position, other.collider.bounds.size.x);
+            Vector2 dir = new Vector2 (x, 0.25f).normalized;
+            GetComponent<Rigidbody2D>().velocity = (dir) * speed * Time.deltaTime;
         }
     }
 }
