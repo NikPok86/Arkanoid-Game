@@ -8,6 +8,8 @@ TagManager:
   - brick
   - paddle
   - extraLife
+  - enlarge
+  - reduce
   layers:
   - Default
   - TransparentFX
