@@ -10,6 +10,8 @@ public class Ball : MonoBehaviour
     public Transform paddle;
     public float speed;
     public Transform explosion;
+    public Transform powerup;
+    public GameManager gm;
 
     void Start()
     {
@@ -18,6 +20,11 @@ public class Ball : MonoBehaviour
 
     void Update()
     {
+        if (gm.gameOver)
+        {
+            return;
+        }
+        
         if (!inPlay)
         {
             transform.position = paddle.position;
@@ -34,9 +41,9 @@ public class Ball : MonoBehaviour
     {
         if (other.CompareTag("bottom"))
         {
-            Debug.Log("Ball fell");
             rb.velocity = Vector2.zero;
             inPlay = false;
+            gm.UpdateLives (-1);    
         }
     }
 
@@ -49,12 +56,21 @@ public class Ball : MonoBehaviour
     {
         if (other.transform.CompareTag("brick"))
         {
+            int randChance = Random.Range(1, 101);
+            if (randChance % 33 == 0)
+            {
+                Instantiate (powerup, other.transform.position, other.transform.rotation);
+            }
+
             Transform newExplosion = Instantiate (explosion, other.transform.position, other.transform.rotation);
             Destroy (newExplosion.gameObject, 1f);
+
+            gm.UpdateScore (other.gameObject.GetComponent<Brick>().points);
+            gm.UpdateNumberOfBricks();
             Destroy (other.gameObject);
         }   
 
-        if (other.gameObject.CompareTag("paddle"))
+        if (other.gameObject.CompareTag("paddle") && transform.position.y >= -3.80)
         {
             float x = hitFactor (transform.position, other.transform.position, other.collider.bounds.size.x);
             Vector2 dir = new Vector2 (x, 0.25f).normalized;
