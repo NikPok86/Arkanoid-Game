@@ -14,19 +14,28 @@ public class GameManager : MonoBehaviour
     public bool gameOver;
     public GameObject gameOverPanel;
     public int numberOfBricks;
+    public Transform[] levels;
+    public int currentLevelIndex = 0;
+    public Ball ball;
+    public Paddle paddle;
 
     // Start is called before the first frame update
     void Start()
     {
         scoreText.text = "Score: " + score;
         livesText.text = "Lives: " + lives;   
-        numberOfBricks = GameObject.FindGameObjectsWithTag ("brick").Length - 1;
+        numberOfBricks = GameObject.FindGameObjectsWithTag ("brick").Length;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (numberOfBricks <= 0)
+        {
+            Destroy (GameObject.Find ("ExtraLife(Clone)"));   
+            Destroy (GameObject.Find ("Enlarge(Clone)"));
+            Destroy (GameObject.Find ("Reduce(Clone)"));
+        }
     }
 
     public void UpdateLives (int changeInLives)
@@ -51,10 +60,28 @@ public class GameManager : MonoBehaviour
     public void UpdateNumberOfBricks()
     {
         numberOfBricks--;
+
         if (numberOfBricks <= 0)
         {
-            GameOver();
+            if (currentLevelIndex >= levels.Length - 1)
+            {
+                GameOver();
+            }
+            else
+            {
+                gameOver = true;
+            }
         }
+    }
+
+    public void LoadLevel ()
+    {
+        currentLevelIndex++;
+        Instantiate (levels [currentLevelIndex], Vector2.zero, Quaternion.identity);
+        paddle.transform.localScale = new Vector2 (0.7f, 1.5f); 
+        numberOfBricks = GameObject.FindGameObjectsWithTag ("brick").Length;
+        ball.extraLifeLimit = false;
+        gameOver = false;
     }
 
     void GameOver()

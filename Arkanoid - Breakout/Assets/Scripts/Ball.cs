@@ -7,18 +7,35 @@ public class Ball : MonoBehaviour
 
     public Rigidbody2D rb;
     public bool inPlay;
+    public float randBallPosition;
     public Transform paddle;
     public float speed;
-    public Transform explosion;
+    public Transform blueExplosion;
+    public Transform greenExplosion;
+    public Transform greyExplosion;
+    public Transform orangeExplosion;
+    public Transform pinkEplosion;
+    public Transform purpleExplosion;
+    public Transform redExplosion;
+    public Transform tirkuazExplosion;
+    public Transform yellowExplosion;
     public Transform powerupExtraLife;
     public Transform powerupEnlarge;
     public Transform powerupReduce;
     public Transform paddleSize;
-    public GameManager gm;
+    public float paddleShift;
+    public GameManager gm;   
+    public int numberOfEnlargePowerup;
+    public int maxNumberOfEnlargePowerup;
+    public int numberOfReducePowerup;
+    public int maxNumberOfReducePowerup;
+    public bool extraLifeLimit = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        paddleShift = paddleSize.transform.localScale.x;
+        randBallPosition = Random.Range (-paddleShift / 2, paddleShift / 2);
     }
 
     void Update()
@@ -27,10 +44,57 @@ public class Ball : MonoBehaviour
         {
             return;
         }
-        
+
+        paddleShift = paddleSize.transform.localScale.x;
+
+        numberOfEnlargePowerup = GameObject.FindGameObjectsWithTag ("enlarge").Length;
+        numberOfReducePowerup = GameObject.FindGameObjectsWithTag ("reduce").Length;
+
+        if (paddleShift >= 0.3f && paddleShift <= 0.5f)
+        {
+            maxNumberOfEnlargePowerup = 3;
+        }
+
+        else if (paddleShift >= 0.6f && paddleShift <= 0.8f)
+        {
+            maxNumberOfEnlargePowerup = 2;
+        }
+
+        else if (paddleShift >= 1.1f && paddleShift <= 1.3f)
+        {
+            maxNumberOfEnlargePowerup = 1;
+        }
+
+        else
+        {
+            maxNumberOfEnlargePowerup = 0;
+        }
+
+
+        if (paddleShift >= 0.3f && paddleShift <= 0.5f)
+        {
+            maxNumberOfReducePowerup = 0;
+        }
+
+        else if (paddleShift >= 0.6f && paddleShift <= 0.8f)
+        {
+            maxNumberOfReducePowerup = 1;
+        }
+
+        else if (paddleShift >= 1.1f && paddleShift <= 1.3f)
+        {
+            maxNumberOfReducePowerup = 2;
+        }
+
+        else
+        {
+            maxNumberOfReducePowerup = 3;
+        }
+     
+
         if (!inPlay)
         {
-            transform.position = paddle.position;
+            transform.position = new Vector2 (paddle.position.x + randBallPosition, paddle.position.y);
         }
 
         if (Input.GetMouseButtonDown(0) && !inPlay)
@@ -44,9 +108,20 @@ public class Ball : MonoBehaviour
     {
         if (other.CompareTag("bottom"))
         {
+            if (!gm.gameOver)
+            {
+                gm.UpdateLives (-1);    
+            }
+
+            if (gm.numberOfBricks <= 0)
+            {
+                gm.LoadLevel();
+            }
+
             rb.velocity = Vector2.zero;
             inPlay = false;
-            gm.UpdateLives (-1);    
+
+            randBallPosition = Random.Range (-paddleShift / 2, paddleShift / 2);
         }
     }
 
@@ -56,44 +131,107 @@ public class Ball : MonoBehaviour
     }
 
     void OnCollisionEnter2D(Collision2D other)
-    {
+    {                   
         if (other.transform.CompareTag("brick"))
         {
-            int randChance = Random.Range(1, 101);
-            int randChance02 = Random.Range (1, 3);
+            Brick brickScript = other.gameObject.GetComponent<Brick>();
 
-            if (paddleSize.transform.localScale.x <= 0.4f)
+            if (brickScript.hitsToBreak > 1)
             {
-                randChance02 = 1;
+                brickScript.BreakBrick();
             }
 
-            else if (paddleSize.transform.localScale.x >= 1.7f)
-            {
-                randChance02 = 2;
-            }
+            else
+            {   
+                int randChance = Random.Range (1, 101);
+                int randChance02 = Random.Range (1, 3);
 
-            if (randChance % 33 == 0)
-            {
-                Instantiate (powerupExtraLife, other.transform.position, other.transform.rotation);
-            }
+                if (numberOfReducePowerup >= maxNumberOfReducePowerup)
+                {
+                    randChance02 = 1;
+                }
 
-            if (randChance % 25 == 0 && randChance02 == 1 && paddleSize.transform.localScale.x < 1.6f)
-            {
-                Instantiate (powerupReduce, other.transform.position, other.transform.rotation);
-            }
+                if (numberOfEnlargePowerup >= maxNumberOfEnlargePowerup)
+                {
+                    randChance02 = 2;
+                }
 
-            if (randChance % 25 == 0 && randChance02 == 2 && paddleSize.transform.localScale.x < 0.7f)
-            {
-                Instantiate (powerupEnlarge, other.transform.position, other.transform.rotation);
-            }
+                if (randChance % 33 == 0 && !extraLifeLimit)
+                {
+                    Instantiate (powerupExtraLife, other.transform.position, other.transform.rotation);
+                    extraLifeLimit = true;
+                }
 
-            Transform newExplosion = Instantiate (explosion, other.transform.position, other.transform.rotation);
-            Destroy (newExplosion.gameObject, 1f);
+                if (randChance % 1 == 0 && randChance02 == 1 && numberOfEnlargePowerup < maxNumberOfEnlargePowerup)
+                {
+                    Instantiate (powerupEnlarge, other.transform.position, other.transform.rotation);
+                }
 
-            gm.UpdateScore (other.gameObject.GetComponent<Brick>().points);
-            gm.UpdateNumberOfBricks();
-            Destroy (other.gameObject);
-        }   
+                if (randChance % 1 == 0  && randChance02 == 2 && numberOfReducePowerup < maxNumberOfReducePowerup)
+                {
+                    Instantiate (powerupReduce, other.transform.position, other.transform.rotation);
+                }
+
+
+                if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Blue Brick")
+                {
+                    Transform newExplosion = Instantiate (blueExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Green Brick")
+                {
+                    Transform newExplosion = Instantiate (greenExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Grey Brick Broken 2")
+                {
+                    Transform newExplosion = Instantiate (greyExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Orange Brick")
+                {
+                    Transform newExplosion = Instantiate (orangeExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Pink Brick")
+                {
+                    Transform newExplosion = Instantiate (pinkEplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Purple Brick")
+                {
+                    Transform newExplosion = Instantiate (purpleExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Red Brick")
+                {
+                    Transform newExplosion = Instantiate (redExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Tirkuaz Brick")
+                {
+                    Transform newExplosion = Instantiate (tirkuazExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                else if (other.gameObject.GetComponent<SpriteRenderer>().sprite.name == "Yellow Brick")
+                {
+                    Transform newExplosion = Instantiate (yellowExplosion, other.transform.position, other.transform.rotation);
+                    Destroy (newExplosion.gameObject, 1f);
+                }
+
+                gm.UpdateScore (brickScript.points);
+                gm.UpdateNumberOfBricks();
+                Destroy (other.gameObject);
+            }   
+        }
 
         if (other.gameObject.CompareTag("paddle") && transform.position.y >= -3.80)
         {
@@ -103,3 +241,4 @@ public class Ball : MonoBehaviour
         }
     }
 }
+    

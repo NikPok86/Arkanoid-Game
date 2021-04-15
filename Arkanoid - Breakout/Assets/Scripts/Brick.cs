@@ -6,16 +6,12 @@ public class Brick : MonoBehaviour
 {
 
     public int points;
+    public int hitsToBreak;
+    public Sprite hitSprite;
 
-    // Start is called before the first frame update
-    void Start()
+    public void BreakBrick()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        hitsToBreak--;
+        GetComponent<SpriteRenderer>().sprite = hitSprite;
     }
 }
