@@ -8,9 +8,10 @@ public class Paddle : MonoBehaviour
     public float initialPositionY = -4f;
     public float speed = 0.5f;
     public GameManager gm;
-    float paddleChangeSize;
+    public float paddleChangeSize;
     float leftScreenEdge;
     float rightScreenEdge;
+    public Ball ball;
 
     // Start is called before the first frame update
     void Start()
@@ -103,6 +104,13 @@ public class Paddle : MonoBehaviour
             }
             Destroy (other.gameObject);
         }
+
+        if (other.gameObject.CompareTag("slow"))
+        {
+            ball.speed = 300;
+            Destroy (other.gameObject);
+        }
+        
 
     }
 }

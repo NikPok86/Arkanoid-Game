@@ -13,8 +13,11 @@ public class GameManager : MonoBehaviour
     public Text livesText;
     public bool gameOver;
     public GameObject gameOverPanel;
+    public GameObject loadLevelPanel;
+    public GameObject mainMenuPanel;
     public int numberOfBricks;
     public Transform[] levels;
+    Transform newLevel;
     public int currentLevelIndex = 0;
     public Ball ball;
     public Paddle paddle;
@@ -22,6 +25,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameOver = true;
+        MainMenu();
         scoreText.text = "Score: " + score;
         livesText.text = "Lives: " + lives;   
         numberOfBricks = GameObject.FindGameObjectsWithTag ("brick").Length;
@@ -63,25 +68,53 @@ public class GameManager : MonoBehaviour
 
         if (numberOfBricks <= 0)
         {
-            if (currentLevelIndex >= levels.Length - 1)
+            Destroy (newLevel.gameObject);
+
+            if (currentLevelIndex >= levels.Length)
             {
                 GameOver();
             }
             else
             {
+                loadLevelPanel.SetActive (true);
+                loadLevelPanel.GetComponentInChildren<Text>().text = "LEVEL " + (currentLevelIndex + 1);
                 gameOver = true;
             }
         }
     }
 
+    public void MainMenu()
+    {
+        mainMenuPanel.SetActive(true);
+    }
+
+    public void Play()
+    {
+        gameOver = true;
+        currentLevelIndex = 0;
+        lives = 3;
+        livesText.text = "Lives: " + lives;
+        score = 0;
+        scoreText.text = "Score: " + score;
+        mainMenuPanel.SetActive (false);
+        loadLevelPanel.SetActive (true);
+        loadLevelPanel.GetComponentInChildren<Text>().text = "LEVEL  " + (currentLevelIndex + 1);
+        Invoke ("LoadLevel", 3f);
+    }
+
     public void LoadLevel ()
     {
+        loadLevelPanel.SetActive (false);
+        ball.speed = 500f;
+        paddle.paddleChangeSize = 0.7f;
+        newLevel = Instantiate (levels [currentLevelIndex], Vector2.zero, Quaternion.identity);
         currentLevelIndex++;
-        Instantiate (levels [currentLevelIndex], Vector2.zero, Quaternion.identity);
         paddle.transform.localScale = new Vector2 (0.7f, 1.5f); 
         numberOfBricks = GameObject.FindGameObjectsWithTag ("brick").Length;
         ball.extraLifeLimit = false;
+        ball.slowLimit = false;
         gameOver = false;
+        
     }
 
     void GameOver()
@@ -92,14 +125,26 @@ public class GameManager : MonoBehaviour
 
     public void PlayAgain()
     {
-        SceneManager.LoadScene ("Arkanoid"); 
+        Destroy (newLevel.gameObject);
+        currentLevelIndex = 0;
+        lives = 3;
+        livesText.text = "Lives: " + lives;
+        score = 0;
+        scoreText.text = "Score: " + score;
+        gameOver = true;
+        gameOverPanel.SetActive(false);
+        loadLevelPanel.SetActive (true);
+        loadLevelPanel.GetComponentInChildren<Text>().text = "LEVEL  " + (currentLevelIndex + 1);
+        Invoke ("LoadLevel", 3f);
     }
 
     public void Quit()
     {
-        Application.Quit();
-        Debug.Log ("Game Quit");
+        SceneManager.LoadScene ("Arkanoid"); 
     }
 
-
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 }

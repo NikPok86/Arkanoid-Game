@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-
     public Rigidbody2D rb;
     public bool inPlay;
     public float randBallPosition;
-    public Transform paddle;
+    public Transform paddleBall;
     public float speed;
     public Transform blueExplosion;
     public Transform greenExplosion;
@@ -22,6 +21,7 @@ public class Ball : MonoBehaviour
     public Transform powerupExtraLife;
     public Transform powerupEnlarge;
     public Transform powerupReduce;
+    public Transform powerupSlow;
     public Transform paddleSize;
     public float paddleShift;
     public GameManager gm;   
@@ -30,6 +30,8 @@ public class Ball : MonoBehaviour
     public int numberOfReducePowerup;
     public int maxNumberOfReducePowerup;
     public bool extraLifeLimit = false;
+    public bool slowLimit = false;
+    public Paddle paddle;
 
     void Start()
     {
@@ -43,6 +45,11 @@ public class Ball : MonoBehaviour
         if (gm.gameOver)
         {
             return;
+        }
+
+        if (speed < 500f)
+        {
+            speed += 10f * Time.deltaTime;
         }
 
         paddleShift = paddleSize.transform.localScale.x;
@@ -94,7 +101,7 @@ public class Ball : MonoBehaviour
 
         if (!inPlay)
         {
-            transform.position = new Vector2 (paddle.position.x + randBallPosition, paddle.position.y);
+            transform.position = new Vector2 (paddleBall.position.x + randBallPosition, paddleBall.position.y);
         }
 
         if (Input.GetMouseButtonDown(0) && !inPlay)
@@ -120,6 +127,11 @@ public class Ball : MonoBehaviour
 
             rb.velocity = Vector2.zero;
             inPlay = false;
+            
+            paddle.paddleChangeSize = 0.7f;
+            paddle.transform.localScale = new Vector2 (paddle.paddleChangeSize, 1.5f);
+
+            speed = 500f;
 
             randBallPosition = Random.Range (-paddleShift / 2, paddleShift / 2);
         }
@@ -162,14 +174,20 @@ public class Ball : MonoBehaviour
                     extraLifeLimit = true;
                 }
 
-                if (randChance % 1 == 0 && randChance02 == 1 && numberOfEnlargePowerup < maxNumberOfEnlargePowerup)
+                if (randChance % 20 == 0 && randChance02 == 1 && numberOfEnlargePowerup < maxNumberOfEnlargePowerup)
                 {
                     Instantiate (powerupEnlarge, other.transform.position, other.transform.rotation);
                 }
 
-                if (randChance % 1 == 0  && randChance02 == 2 && numberOfReducePowerup < maxNumberOfReducePowerup)
+                if (randChance % 20 == 0  && randChance02 == 2 && numberOfReducePowerup < maxNumberOfReducePowerup)
                 {
                     Instantiate (powerupReduce, other.transform.position, other.transform.rotation);
+                }
+
+                if (randChance % 24 == 0 && !slowLimit)
+                {
+                    Instantiate (powerupSlow, other.transform.position, other.transform.rotation);
+                    slowLimit = true;
                 }
 
 
@@ -232,6 +250,7 @@ public class Ball : MonoBehaviour
                 Destroy (other.gameObject);
             }   
         }
+
 
         if (other.gameObject.CompareTag("paddle") && transform.position.y >= -3.80)
         {

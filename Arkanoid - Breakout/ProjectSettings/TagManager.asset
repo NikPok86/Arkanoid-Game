@@ -10,6 +10,8 @@ TagManager:
   - extraLife
   - enlarge
   - reduce
+  - slow
+  - level
   layers:
   - Default
   - TransparentFX
