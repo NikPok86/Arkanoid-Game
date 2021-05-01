@@ -40,6 +40,7 @@ public class GameManager : MonoBehaviour
             Destroy (GameObject.Find ("ExtraLife(Clone)"));   
             Destroy (GameObject.Find ("Enlarge(Clone)"));
             Destroy (GameObject.Find ("Reduce(Clone)"));
+            Destroy (GameObject.Find ("Catch(Clone)"));
         }
     }
 
@@ -113,8 +114,8 @@ public class GameManager : MonoBehaviour
         numberOfBricks = GameObject.FindGameObjectsWithTag ("brick").Length;
         ball.extraLifeLimit = false;
         ball.slowLimit = false;
+        ball.catchLimit = false;
         gameOver = false;
-        
     }
 
     void GameOver()
@@ -125,7 +126,7 @@ public class GameManager : MonoBehaviour
 
     public void PlayAgain()
     {
-        Destroy (newLevel.gameObject);
+        Destroy (newLevel.gameObject);  
         currentLevelIndex = 0;
         lives = 3;
         livesText.text = "Lives: " + lives;

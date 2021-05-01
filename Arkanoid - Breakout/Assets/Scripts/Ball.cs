@@ -22,6 +22,7 @@ public class Ball : MonoBehaviour
     public Transform powerupEnlarge;
     public Transform powerupReduce;
     public Transform powerupSlow;
+    public Transform powerCatch;
     public Transform paddleSize;
     public float paddleShift;
     public GameManager gm;   
@@ -31,6 +32,8 @@ public class Ball : MonoBehaviour
     public int maxNumberOfReducePowerup;
     public bool extraLifeLimit = false;
     public bool slowLimit = false;
+    public bool catchLimit = false;
+    public int catchCount = 0;
     public Paddle paddle;
 
     void Start()
@@ -50,6 +53,11 @@ public class Ball : MonoBehaviour
         if (speed < 500f)
         {
             speed += 10f * Time.deltaTime;
+        }
+
+        if (catchCount >= 3)
+        {
+            paddle.inCatch = false;
         }
 
         paddleShift = paddleSize.transform.localScale.x;
@@ -126,7 +134,6 @@ public class Ball : MonoBehaviour
             }
 
             rb.velocity = Vector2.zero;
-            inPlay = false;
             
             paddle.paddleChangeSize = 0.7f;
             paddle.transform.localScale = new Vector2 (paddle.paddleChangeSize, 1.5f);
@@ -134,6 +141,10 @@ public class Ball : MonoBehaviour
             speed = 500f;
 
             randBallPosition = Random.Range (-paddleShift / 2, paddleShift / 2);
+
+            inPlay = false;
+
+            catchCount = 3;            
         }
     }
 
@@ -188,6 +199,12 @@ public class Ball : MonoBehaviour
                 {
                     Instantiate (powerupSlow, other.transform.position, other.transform.rotation);
                     slowLimit = true;
+                }
+
+                if (randChance % 1 == 0 && !catchLimit)
+                {
+                    Instantiate (powerCatch, other.transform.position, other.transform.rotation);
+                    catchLimit = true;
                 }
 
 
@@ -254,9 +271,18 @@ public class Ball : MonoBehaviour
 
         if (other.gameObject.CompareTag("paddle") && transform.position.y >= -3.80)
         {
-            float x = hitFactor (transform.position, other.transform.position, other.collider.bounds.size.x);
-            Vector2 dir = new Vector2 (x, 0.25f).normalized;
-            GetComponent<Rigidbody2D>().velocity = (dir) * speed * Time.deltaTime;
+            if (paddle.inCatch)
+            {
+                inPlay = false;
+                catchCount++;
+            }     
+            
+            else
+            {
+                float x = hitFactor (transform.position, other.transform.position, other.collider.bounds.size.x);
+                Vector2 dir = new Vector2 (x, 0.25f).normalized;
+                GetComponent<Rigidbody2D>().velocity = (dir) * speed * Time.deltaTime;
+            }   
         }
     }
 }

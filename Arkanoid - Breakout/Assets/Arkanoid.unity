@@ -2435,6 +2435,8 @@ MonoBehaviour:
     type: 3}
   powerupSlow: {fileID: 4371326343752296406, guid: a3885d0810e669a46ab7faa01c595979,
     type: 3}
+  powerCatch: {fileID: 6673445849672499805, guid: 10ea0dcb13988ee4cb23db858ce12d51,
+    type: 3}
   paddleSize: {fileID: 1760945987}
   paddleShift: 0
   gm: {fileID: 1312463116}
@@ -2444,6 +2446,8 @@ MonoBehaviour:
   maxNumberOfReducePowerup: 0
   extraLifeLimit: 0
   slowLimit: 0
+  catchLimit: 0
+  catchCount: 0
   paddle: {fileID: 1760945984}
 --- !u!58 &1632526474
 CircleCollider2D:
@@ -2583,6 +2587,7 @@ MonoBehaviour:
   gm: {fileID: 1312463116}
   paddleChangeSize: 0
   ball: {fileID: 1632526473}
+  inCatch: 0
 --- !u!61 &1760945985
 BoxCollider2D:
   m_ObjectHideFlags: 0

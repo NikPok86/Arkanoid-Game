@@ -12,6 +12,7 @@ public class Paddle : MonoBehaviour
     float leftScreenEdge;
     float rightScreenEdge;
     public Ball ball;
+    public bool inCatch;
 
     // Start is called before the first frame update
     void Start()
@@ -111,6 +112,11 @@ public class Paddle : MonoBehaviour
             Destroy (other.gameObject);
         }
         
+        if (other.gameObject.CompareTag("catch"))
+        {
+            inCatch = true;
+            Destroy (other.gameObject);
+        }
 
     }
 }

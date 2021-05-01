@@ -12,6 +12,7 @@ TagManager:
   - reduce
   - slow
   - level
+  - catch
   layers:
   - Default
   - TransparentFX
